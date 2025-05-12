@@ -121,13 +121,6 @@ with tab1:
             st.subheader("Data Preview")
             st.dataframe(df.head())
             
-            # Advanced Analysis in main content
-            st.subheader("Advanced Analysis")
-            advanced_options = st.multiselect(
-                "Select Advanced Analysis Options",
-                ["Correlation Analysis", "Distribution Analysis", "Time Series Decomposition"]
-            )
-            
             # Select columns for analysis
             numeric_columns = df.select_dtypes(include=[np.number]).columns.tolist()
             categorical_columns = df.select_dtypes(include=['object']).columns.tolist()
@@ -195,6 +188,15 @@ with tab1:
                         sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', ax=ax)
                         st.pyplot(fig)
                         plt.close()
+                        
+                        # Show distribution plots
+                        st.subheader("Distribution Analysis")
+                        for col in selected_numeric:
+                            fig, ax = plt.subplots(figsize=(8, 4))
+                            sns.histplot(data=df, x=col, ax=ax)
+                            ax.set_title(f"Distribution of {col}")
+                            st.pyplot(fig)
+                            plt.close()
             
             with col2:
                 if st.button("Detect Anomalies"):
@@ -265,60 +267,27 @@ with tab1:
                         fig = model.plot_components(forecast)
                         st.pyplot(fig)
                         plt.close()
-            
-            # Additional analysis options
-            if 'Distribution Analysis' in advanced_options:
-                st.subheader("Distribution Analysis")
-                for col in selected_numeric:
-                    fig, ax = plt.subplots(figsize=(8, 4))
-                    sns.histplot(data=df, x=col, ax=ax)
-                    ax.set_title(f"Distribution of {col}")
-                    st.pyplot(fig)
-                    plt.close()
-            
-            if 'Time Series Decomposition' in advanced_options:
-                st.subheader("Time Series Decomposition")
-                for col in selected_numeric:
-                    # Check if there's a date column
-                    date_columns = df.select_dtypes(include=['datetime64']).columns.tolist()
-                    if not date_columns:
-                        st.warning("No date column found for trend analysis. Please ensure your data has a date column.")
-                    else:
-                        date_col = st.selectbox("Select date column", date_columns)
                         
-                        # Prepare data for trend analysis
-                        df['date'] = pd.to_datetime(df[date_col])
-                        df['text_length'] = df[col].str.len()
+                        # Show time series decomposition
+                        st.subheader("Time Series Decomposition")
+                        # Plot trend, seasonal, and residual components
+                        fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(12, 12))
                         
-                        # Group by date and calculate metrics
-                        daily_metrics = df.groupby('date').agg({
-                            'text_length': ['mean', 'count']
-                        }).reset_index()
+                        # Trend
+                        ax1.plot(forecast['ds'], forecast['trend'])
+                        ax1.set_title('Trend')
                         
-                        # Plot text length trend
-                        fig, ax = plt.subplots(figsize=(12, 6))
-                        ax.plot(daily_metrics['date'], daily_metrics[('text_length', 'mean')], label='Average Text Length')
-                        ax.set_title("Text Length Trend Over Time")
-                        ax.set_xlabel("Date")
-                        ax.set_ylabel("Average Text Length")
-                        plt.xticks(rotation=45)
+                        # Seasonal
+                        ax2.plot(forecast['ds'], forecast['yearly'] + forecast['weekly'])
+                        ax2.set_title('Seasonal')
+                        
+                        # Residual
+                        ax3.plot(forecast['ds'], forecast['yhat'] - forecast['trend'] - forecast['yearly'] - forecast['weekly'])
+                        ax3.set_title('Residual')
+                        
+                        plt.tight_layout()
                         st.pyplot(fig)
                         plt.close()
-                        
-                        # Plot text frequency trend
-                        fig, ax = plt.subplots(figsize=(12, 6))
-                        ax.plot(daily_metrics['date'], daily_metrics[('text_length', 'count')], label='Number of Entries')
-                        ax.set_title("Text Entry Frequency Over Time")
-                        ax.set_xlabel("Date")
-                        ax.set_ylabel("Number of Entries")
-                        plt.xticks(rotation=45)
-                        st.pyplot(fig)
-                        plt.close()
-                        
-                        # Show trend statistics
-                        st.write("Trend Statistics:")
-                        st.write(f"Average daily entries: {daily_metrics[('text_length', 'count')].mean():.2f}")
-                        st.write(f"Average text length: {daily_metrics[('text_length', 'mean')].mean():.2f}")
         
         except Exception as e:
             st.error(f"Error processing file: {str(e)}")
