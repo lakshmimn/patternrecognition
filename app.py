@@ -121,21 +121,32 @@ with tab1:
             st.subheader("Data Preview")
             st.dataframe(df.head())
             
-            # Sidebar for analysis options
-            st.sidebar.header("Analysis Options")
+            # Analysis Options in main content
+            st.subheader("Analysis Options")
+            analysis_type = st.selectbox(
+                "Select Analysis Type",
+                ["Pattern Analysis", "Anomaly Detection", "Trend Forecasting"]
+            )
+            
+            # Advanced Analysis in main content
+            st.subheader("Advanced Analysis")
+            advanced_options = st.multiselect(
+                "Select Advanced Analysis Options",
+                ["Correlation Analysis", "Distribution Analysis", "Time Series Decomposition"]
+            )
             
             # Select columns for analysis
             numeric_columns = df.select_dtypes(include=[np.number]).columns.tolist()
             categorical_columns = df.select_dtypes(include=['object']).columns.tolist()
             
-            selected_numeric = st.sidebar.multiselect(
+            selected_numeric = st.multiselect(
                 "Select numeric columns for analysis",
                 numeric_columns,
                 default=numeric_columns[:3] if len(numeric_columns) > 3 else numeric_columns,
                 key="numeric_columns"
             )
             
-            selected_categorical = st.sidebar.multiselect(
+            selected_categorical = st.multiselect(
                 "Select categorical columns for analysis",
                 categorical_columns,
                 default=categorical_columns[:2] if len(categorical_columns) > 2 else categorical_columns,
@@ -263,12 +274,7 @@ with tab1:
                         plt.close()
             
             # Additional analysis options
-            st.sidebar.subheader("Advanced Analysis")
-            if st.sidebar.checkbox("Show Statistical Summary"):
-                st.subheader("Statistical Summary")
-                st.write(df[selected_numeric].describe())
-            
-            if st.sidebar.checkbox("Show Distribution Plots"):
+            if 'Distribution Analysis' in advanced_options:
                 st.subheader("Distribution Analysis")
                 for col in selected_numeric:
                     fig, ax = plt.subplots(figsize=(8, 4))
@@ -277,6 +283,50 @@ with tab1:
                     st.pyplot(fig)
                     plt.close()
             
+            if 'Time Series Decomposition' in advanced_options:
+                st.subheader("Time Series Decomposition")
+                for col in selected_numeric:
+                    # Check if there's a date column
+                    date_columns = df.select_dtypes(include=['datetime64']).columns.tolist()
+                    if not date_columns:
+                        st.warning("No date column found for trend analysis. Please ensure your data has a date column.")
+                    else:
+                        date_col = st.selectbox("Select date column", date_columns)
+                        
+                        # Prepare data for trend analysis
+                        df['date'] = pd.to_datetime(df[date_col])
+                        df['text_length'] = df[col].str.len()
+                        
+                        # Group by date and calculate metrics
+                        daily_metrics = df.groupby('date').agg({
+                            'text_length': ['mean', 'count']
+                        }).reset_index()
+                        
+                        # Plot text length trend
+                        fig, ax = plt.subplots(figsize=(12, 6))
+                        ax.plot(daily_metrics['date'], daily_metrics[('text_length', 'mean')], label='Average Text Length')
+                        ax.set_title("Text Length Trend Over Time")
+                        ax.set_xlabel("Date")
+                        ax.set_ylabel("Average Text Length")
+                        plt.xticks(rotation=45)
+                        st.pyplot(fig)
+                        plt.close()
+                        
+                        # Plot text frequency trend
+                        fig, ax = plt.subplots(figsize=(12, 6))
+                        ax.plot(daily_metrics['date'], daily_metrics[('text_length', 'count')], label='Number of Entries')
+                        ax.set_title("Text Entry Frequency Over Time")
+                        ax.set_xlabel("Date")
+                        ax.set_ylabel("Number of Entries")
+                        plt.xticks(rotation=45)
+                        st.pyplot(fig)
+                        plt.close()
+                        
+                        # Show trend statistics
+                        st.write("Trend Statistics:")
+                        st.write(f"Average daily entries: {daily_metrics[('text_length', 'count')].mean():.2f}")
+                        st.write(f"Average text length: {daily_metrics[('text_length', 'mean')].mean():.2f}")
+        
         except Exception as e:
             st.error(f"Error processing file: {str(e)}")
             # Don't log the upload if there was an error
