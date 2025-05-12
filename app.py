@@ -76,7 +76,13 @@ if st.sidebar.checkbox("Show Usage Statistics"):
 # Create tabs
 tab1, tab2 = st.tabs(["Numeric Analysis", "Text Analysis"])
 
+# Get the selected tab
+selected_tab = "Numeric Analysis" if st.session_state.get('active_tab') is None else st.session_state.get('active_tab')
+
 with tab1:
+    # Update selected tab
+    st.session_state.active_tab = "Numeric Analysis"
+    
     # File uploader for numeric analysis
     uploaded_file = st.file_uploader("Choose a file for numeric analysis", type=['xlsx', 'csv'], key="numeric_analysis_uploader")
 
@@ -88,7 +94,22 @@ with tab1:
         # Reset the last uploaded file when no file is selected
         if 'last_uploaded_file' in st.session_state:
             del st.session_state.last_uploaded_file
-
+    
+    # Only show Analysis Options and Advanced Analysis for Numeric Analysis tab
+    if selected_tab == "Numeric Analysis":
+        st.sidebar.title("Analysis Options")
+        analysis_type = st.sidebar.selectbox(
+            "Select Analysis Type",
+            ["Pattern Analysis", "Anomaly Detection", "Trend Forecasting"]
+        )
+        
+        st.sidebar.title("Advanced Analysis")
+        advanced_options = st.sidebar.multiselect(
+            "Select Advanced Analysis Options",
+            ["Correlation Analysis", "Distribution Analysis", "Time Series Decomposition"]
+        )
+    
+    # Main content area
     if uploaded_file is not None:
         try:
             if uploaded_file.name.endswith('.csv'):
@@ -261,6 +282,9 @@ with tab1:
         st.info("Please upload a file to begin numeric analysis.")
 
 with tab2:
+    # Update selected tab
+    st.session_state.active_tab = "Text Analysis"
+    
     st.header("Text Pattern Analysis")
     
     # File uploader for text analysis
