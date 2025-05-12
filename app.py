@@ -55,6 +55,29 @@ This application uses machine learning to analyze patterns and detect anomalies 
 Upload your Excel or CSV file to get started.
 """)
 
+# Create tabs
+tab1, tab2 = st.tabs(["Numeric Analysis", "Text Analysis"])
+
+# Get the selected tab
+selected_tab = "Numeric Analysis" if st.session_state.get('active_tab') is None else st.session_state.get('active_tab')
+
+# Clear sidebar when switching tabs
+if selected_tab != st.session_state.get('active_tab'):
+    # Reset any tab-specific session state variables
+    if 'selected_numeric' in st.session_state:
+        del st.session_state.selected_numeric
+    if 'selected_categorical' in st.session_state:
+        del st.session_state.selected_categorical
+    if 'numeric_columns' in st.session_state:
+        del st.session_state.numeric_columns
+    if 'categorical_columns' in st.session_state:
+        del st.session_state.categorical_columns
+    if 'text_column' in st.session_state:
+        del st.session_state.text_column
+
+# Clear the sidebar
+st.sidebar.empty()
+
 # Add metrics display in sidebar
 st.sidebar.header("Usage Metrics")
 if st.sidebar.checkbox("Show Usage Statistics"):
@@ -72,22 +95,6 @@ if st.sidebar.checkbox("Show Usage Statistics"):
         st.sidebar.write(f"Analyses: {stat['analyses_performed']}")
         st.sidebar.write(f"Uploads: {stat['files_uploaded']}")
         st.sidebar.write("---")
-
-# Create tabs
-tab1, tab2 = st.tabs(["Numeric Analysis", "Text Analysis"])
-
-# Get the selected tab
-selected_tab = "Numeric Analysis" if st.session_state.get('active_tab') is None else st.session_state.get('active_tab')
-
-# Clear sidebar when switching tabs
-if selected_tab != st.session_state.get('active_tab'):
-    # Clear any existing sidebar elements
-    st.sidebar.empty()
-    # Reset any tab-specific session state variables
-    if 'selected_numeric' in st.session_state:
-        del st.session_state.selected_numeric
-    if 'selected_categorical' in st.session_state:
-        del st.session_state.selected_categorical
 
 with tab1:
     # Update selected tab
