@@ -61,6 +61,9 @@ tab1, tab2 = st.tabs(["Numeric Analysis", "Text Analysis"])
 # Get the selected tab
 selected_tab = "Numeric Analysis" if st.session_state.get('active_tab') is None else st.session_state.get('active_tab')
 
+# Create a container for the sidebar
+sidebar_container = st.sidebar.container()
+
 # Clear sidebar when switching tabs
 if selected_tab != st.session_state.get('active_tab'):
     # Reset any tab-specific session state variables
@@ -75,26 +78,24 @@ if selected_tab != st.session_state.get('active_tab'):
     if 'text_column' in st.session_state:
         del st.session_state.text_column
 
-# Clear the sidebar
-st.sidebar.empty()
-
-# Add metrics display in sidebar
-st.sidebar.header("Usage Metrics")
-if st.sidebar.checkbox("Show Usage Statistics"):
-    total_stats = metrics.get_total_stats()
-    st.sidebar.metric("Total Site Visits", total_stats['total_views'])
-    st.sidebar.metric("Total Analyses", total_stats['total_analyses'])
-    st.sidebar.metric("Total Files Uploaded", total_stats['total_uploads'])
-    
-    # Show daily stats
-    st.sidebar.subheader("Last 7 Days")
-    daily_stats = metrics.get_daily_stats(7)
-    for stat in daily_stats:
-        st.sidebar.write(f"**{stat['date']}**")
-        st.sidebar.write(f"Visits: {stat['page_views']}")
-        st.sidebar.write(f"Analyses: {stat['analyses_performed']}")
-        st.sidebar.write(f"Uploads: {stat['files_uploaded']}")
-        st.sidebar.write("---")
+# Add metrics display in sidebar container
+with sidebar_container:
+    st.header("Usage Metrics")
+    if st.checkbox("Show Usage Statistics"):
+        total_stats = metrics.get_total_stats()
+        st.metric("Total Site Visits", total_stats['total_views'])
+        st.metric("Total Analyses", total_stats['total_analyses'])
+        st.metric("Total Files Uploaded", total_stats['total_uploads'])
+        
+        # Show daily stats
+        st.subheader("Last 7 Days")
+        daily_stats = metrics.get_daily_stats(7)
+        for stat in daily_stats:
+            st.write(f"**{stat['date']}**")
+            st.write(f"Visits: {stat['page_views']}")
+            st.write(f"Analyses: {stat['analyses_performed']}")
+            st.write(f"Uploads: {stat['files_uploaded']}")
+            st.write("---")
 
 with tab1:
     # Update selected tab
