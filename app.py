@@ -95,20 +95,6 @@ with tab1:
         if 'last_uploaded_file' in st.session_state:
             del st.session_state.last_uploaded_file
     
-    # Only show Analysis Options and Advanced Analysis for Numeric Analysis tab
-    if selected_tab == "Numeric Analysis":
-        st.sidebar.title("Analysis Options")
-        analysis_type = st.sidebar.selectbox(
-            "Select Analysis Type",
-            ["Pattern Analysis", "Anomaly Detection", "Trend Forecasting"]
-        )
-        
-        st.sidebar.title("Advanced Analysis")
-        advanced_options = st.sidebar.multiselect(
-            "Select Advanced Analysis Options",
-            ["Correlation Analysis", "Distribution Analysis", "Time Series Decomposition"]
-        )
-    
     # Main content area
     if uploaded_file is not None:
         try:
