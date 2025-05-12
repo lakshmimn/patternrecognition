@@ -121,13 +121,6 @@ with tab1:
             st.subheader("Data Preview")
             st.dataframe(df.head())
             
-            # Analysis Options in main content
-            st.subheader("Analysis Options")
-            analysis_type = st.selectbox(
-                "Select Analysis Type",
-                ["Pattern Analysis", "Anomaly Detection", "Trend Forecasting"]
-            )
-            
             # Advanced Analysis in main content
             st.subheader("Advanced Analysis")
             advanced_options = st.multiselect(
