@@ -79,6 +79,16 @@ tab1, tab2 = st.tabs(["Numeric Analysis", "Text Analysis"])
 # Get the selected tab
 selected_tab = "Numeric Analysis" if st.session_state.get('active_tab') is None else st.session_state.get('active_tab')
 
+# Clear sidebar when switching tabs
+if selected_tab != st.session_state.get('active_tab'):
+    # Clear any existing sidebar elements
+    st.sidebar.empty()
+    # Reset any tab-specific session state variables
+    if 'selected_numeric' in st.session_state:
+        del st.session_state.selected_numeric
+    if 'selected_categorical' in st.session_state:
+        del st.session_state.selected_categorical
+
 with tab1:
     # Update selected tab
     st.session_state.active_tab = "Numeric Analysis"
@@ -117,13 +127,15 @@ with tab1:
             selected_numeric = st.sidebar.multiselect(
                 "Select numeric columns for analysis",
                 numeric_columns,
-                default=numeric_columns[:3] if len(numeric_columns) > 3 else numeric_columns
+                default=numeric_columns[:3] if len(numeric_columns) > 3 else numeric_columns,
+                key="numeric_columns"
             )
             
             selected_categorical = st.sidebar.multiselect(
                 "Select categorical columns for analysis",
                 categorical_columns,
-                default=categorical_columns[:2] if len(categorical_columns) > 2 else categorical_columns
+                default=categorical_columns[:2] if len(categorical_columns) > 2 else categorical_columns,
+                key="categorical_columns"
             )
             
             # Analysis buttons
@@ -305,7 +317,8 @@ with tab2:
                 # Select text column for analysis
                 selected_column = st.selectbox(
                     "Select text column for analysis",
-                    text_columns
+                    text_columns,
+                    key="text_column"
                 )
                 
                 # Get text data from selected column
